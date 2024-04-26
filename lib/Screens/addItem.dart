@@ -30,9 +30,9 @@ class _AddItemWidgetState extends State<AddItemWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 36, 32, 55),
+      backgroundColor: const Color.fromARGB(255, 36, 32, 55),
       appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 239, 68, 74),
+        backgroundColor: const Color.fromARGB(255, 239, 68, 74),
         foregroundColor: Colors.white,
         title: const Text("Add Item"),
         centerTitle: true,
@@ -93,7 +93,7 @@ class _AddItemWidgetState extends State<AddItemWidget> {
                     style: TextStyle(color: Colors.red, fontSize: 18),
                   ),
                   DropdownButton<Categories>(
-                    dropdownColor: Color.fromARGB(255, 239, 68, 74),
+                    dropdownColor: const Color.fromARGB(255, 239, 68, 74),
                     value: selectedValue,
                     onChanged: (newValue) {
                       setState(() {
@@ -147,7 +147,7 @@ class _AddItemWidgetState extends State<AddItemWidget> {
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromARGB(255, 239, 68, 74),
+                      backgroundColor: const Color.fromARGB(255, 239, 68, 74),
                       foregroundColor: Colors.white),
                   child: const Text("Confirm"),
                 ),
