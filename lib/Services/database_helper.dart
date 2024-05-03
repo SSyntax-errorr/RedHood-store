@@ -26,7 +26,8 @@ class DatabaseHelper {
             itemID INTEGER PRIMARY KEY,
             itemName TEXT,
             itemPrice REAL,
-            category TEXT
+            category TEXT,
+            date TEXT
           );
         ''');
       },
@@ -47,7 +48,7 @@ class DatabaseHelper {
     });
   }
 
-  Future<void> updateItem(DataModel item) async {
+  static Future<void> updateItem(DataModel item) async {
     final Database db = await database;
     await db.update(
       'items',

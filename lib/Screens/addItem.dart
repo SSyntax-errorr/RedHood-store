@@ -1,19 +1,30 @@
+//import 'dart:html';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
+//import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:store/Model/itemModel.dart';
 import 'package:store/Services/database_helper.dart';
+import 'package:store/Screens/home.dart';
+
+DateTime currentDate = DateTime.now();
+DateTime today = DateTime(currentDate.year, currentDate.month, currentDate.day);
+String formattedDate =
+    today.toIso8601String().split('T')[0].split('-').reversed.join('-');
 
 class AddItemWidget extends StatefulWidget {
-  const AddItemWidget({super.key});
+  final int? editItemID;
+  AddItemWidget({super.key, this.editItemID});
 
   @override
   State<AddItemWidget> createState() => _AddItemWidgetState();
 }
 
 class _AddItemWidgetState extends State<AddItemWidget> {
+  TextEditingController _itemNameController = TextEditingController();
+  TextEditingController _itemPriceController = TextEditingController();
+
   final _formKey = GlobalKey<FormState>();
   String itemNameInput = '';
   String itemPriceInput = '0';
@@ -26,6 +37,17 @@ class _AddItemWidgetState extends State<AddItemWidget> {
     Categories.Snacks,
     Categories.FrozenFood
   ];
+
+  @override
+  void initState() {
+    //_itemNameController.text = editItemID;
+    if (widget.editItemID != null) {
+      DataModel itemID =
+          itemList.firstWhere((item) => item.itemID == widget.editItemID);
+      _itemNameController.text = itemID.itemName;
+      _itemPriceController.text = itemID.itemPrice.toString();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +66,7 @@ class _AddItemWidgetState extends State<AddItemWidget> {
           child: Column(
             children: [
               TextFormField(
+                controller: _itemNameController,
                 onChanged: (value) {
                   itemNameInput = value;
                 },
@@ -63,6 +86,7 @@ class _AddItemWidgetState extends State<AddItemWidget> {
                 },
               ),
               TextFormField(
+                controller: _itemPriceController,
                 onChanged: (value) {
                   itemPriceInput = value;
                 },
@@ -120,36 +144,50 @@ class _AddItemWidgetState extends State<AddItemWidget> {
                 margin: const EdgeInsets.only(top: 30),
                 child: ElevatedButton(
                   onPressed: () async {
-                    if (itemNameInput.isEmpty || itemPriceInput.isEmpty) {
+                    if (_itemNameController.text.isEmpty ||
+                        _itemPriceController.text.isEmpty) {
                       return;
+                    }
+
+                    if (widget.editItemID == null) {
+                      int randomId;
+
+                      randomId = Random().nextInt(10000);
+
+                      final DataModel newItem = DataModel(
+                          itemID: randomId,
+                          itemName: itemNameInput,
+                          itemPrice: double.parse(itemPriceInput),
+                          category: selectedValue.name,
+                          date: formattedDate.toString());
+
+                      await DatabaseHelper.insertItem(newItem);
+                    } else {
+                      final DataModel updatedItem = DataModel(
+                          itemID: widget.editItemID!.toInt(),
+                          itemName: _itemNameController.text,
+                          itemPrice: double.parse(_itemPriceController.text),
+                          category: selectedValue.name,
+                          date: formattedDate.toString());
+
+                      await DatabaseHelper.updateItem(updatedItem);
                     }
 
                     if (_formKey.currentState!.validate()) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Added"),
+                        SnackBar(
+                          content: widget.editItemID == null
+                              ? Text("Added $itemNameInput")
+                              : Text("Modified ${_itemNameController.text}"),
                         ),
                       );
                     }
-
-                    int randomId;
-
-                    randomId = Random().nextInt(10000);
-
-                    final DataModel newItem = DataModel(
-                        itemID: randomId,
-                        itemName: itemNameInput,
-                        itemPrice: double.parse(itemPriceInput),
-                        category: selectedValue.name);
-
-                    await DatabaseHelper.insertItem(newItem);
-
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
                       backgroundColor: const Color.fromARGB(255, 239, 68, 74),
                       foregroundColor: Colors.white),
-                  child: const Text("Confirm"),
+                  child: widget.editItemID == null ? Text("Add") : Text("Edit"),
                 ),
               )
             ],
