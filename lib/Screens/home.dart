@@ -63,14 +63,14 @@ class _HomePageState extends State<HomePage> {
         centerTitle: true,
       ),
       body: Stack(children: [
-        //used stack() because column() causes pixel overflow
+        ///used stack() because column() causes pixel overflow
         Positioned(
           top: 10,
           left: 20,
           right: 20,
           child: TextField(
             //search bar
-            style: TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.white),
             cursorColor: redColor,
             decoration: const InputDecoration(
                 enabledBorder: UnderlineInputBorder(
@@ -113,6 +113,7 @@ class _HomePageState extends State<HomePage> {
             ).then((_) {
               setState(() {
                 itemListToDisplay = itemList;
+                drawerIndex = 0;
               });
             });
           }),
@@ -129,7 +130,6 @@ class _HomePageState extends State<HomePage> {
           return Text('Error: ${snapshot.error}');
         } else {
           if (itemListToDisplay.isEmpty && !appJustOpened) {
-            print("x");
           } else if (itemListToDisplay.isNotEmpty && subItemList.isEmpty) {
             itemList = snapshot.data!;
             itemListToDisplay = itemList;
@@ -138,8 +138,6 @@ class _HomePageState extends State<HomePage> {
             itemList = snapshot.data!;
             itemListToDisplay = itemList;
             appJustOpened = false;
-            print(itemListToDisplay.isEmpty);
-            print(appJustOpened);
           }
           //itemList = snapshot.data!;
           //itemListToDisplay = itemList;
@@ -166,9 +164,10 @@ class _HomePageState extends State<HomePage> {
             );
           }
           //requestPermission();
+
           return ListView.builder(
             itemExtent: 80,
-            padding: EdgeInsets.symmetric(horizontal: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             itemCount: itemListToDisplay.length,
             itemBuilder: (BuildContext context, int index) {
               return Slidable(
@@ -176,31 +175,49 @@ class _HomePageState extends State<HomePage> {
                     motion: const StretchMotion(),
                     children: [
                       SlidableAction(
-                        backgroundColor: Color.fromARGB(255, 239, 68, 74),
+                        backgroundColor: const Color.fromARGB(255, 239, 68, 74),
                         icon: Icons.delete,
                         label: 'Delete',
-                        onPressed: (BuildContext) {
+                        onPressed: (BuildContext context) {
                           setState(() {});
-                          deleteData(index, itemList[index].itemID);
+                          deleteData(index, itemListToDisplay[index].itemID);
                         },
                       ),
                       SlidableAction(
-                        backgroundColor: Color.fromARGB(255, 239, 68, 74),
+                        backgroundColor: redColor,
                         icon: Icons.edit,
                         label: 'Edit',
                         onPressed: (BuildContext context) {
                           setState(() {});
-                          editData(index, itemList[index].itemID);
+                          editData(index, itemListToDisplay[index].itemID);
                         },
-                      )
+                      ),
                     ],
                   ),
+                  endActionPane:
+                      ActionPane(motion: const BehindMotion(), children: [
+                    SlidableAction(
+                        icon: itemListToDisplay[index].isCommon == 1
+                            ? Icons.star
+                            : Icons.star_outline,
+                        foregroundColor: itemListToDisplay[index].isCommon == 1
+                            ? redColor
+                            : Colors.white,
+                        label: 'Common Item',
+                        backgroundColor: const Color.fromARGB(
+                            255, 36, 33, 54), //255, 120, 117, 117),
+                        onPressed: (BuildContext context) {
+                          editCommon(itemListToDisplay[index].itemID,
+                              itemListToDisplay[index].isCommon);
+                          setState(() {});
+                        })
+                  ]),
                   child: Container(
                     color: const Color.fromARGB(255, 56, 52, 85),
                     child: ListTile(
                       leading: Icon(
                         categoryIcon(itemListToDisplay.isEmpty
-                            ? itemList[index].category
+                            ? itemListToDisplay[index].category
                             : itemListToDisplay[index].category),
                         color: const Color.fromARGB(255, 243, 97, 100),
                       ),
@@ -267,7 +284,9 @@ class _HomePageState extends State<HomePage> {
   void deleteData(int itemIndex, int itemID) {
     DatabaseHelper dbHelper = DatabaseHelper.instance;
     dbHelper.deleteItem(itemID);
-    setState(() {});
+    setState(() {
+      drawerIndex = 0;
+    });
   }
 
   void editData(int index, int itemID) {
@@ -280,7 +299,12 @@ class _HomePageState extends State<HomePage> {
     ).then((_) {
       setState(() {
         itemListToDisplay = itemList;
+        drawerIndex = 0;
       });
     });
+  }
+
+  Future<void> editCommon(int itemID, int isCommon) async {
+    await DatabaseHelper.makeItemCommon(itemID, isCommon);
   }
 }

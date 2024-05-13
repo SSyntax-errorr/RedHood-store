@@ -6,6 +6,7 @@ class DataModel {
   final double itemPrice;
   final String category;
   final String date;
+  final int isCommon;
   //late String itemPic;
 
   const DataModel(
@@ -13,20 +14,23 @@ class DataModel {
       required this.itemPrice,
       required this.category,
       required this.itemID,
-      required this.date});
+      required this.date,
+      required this.isCommon});
 
   factory DataModel.fromJson(Map<String, dynamic> json) => DataModel(
       itemID: json['itemID'],
       itemName: json['itemName'],
       itemPrice: json['itemPrice'],
       category: json['category'],
-      date: json['date']);
+      date: json['date'],
+      isCommon: json['isCommon']);
 
   Map<String, dynamic> toJson() => {
         'itemID': itemID,
         'itemName': itemName,
         'itemPrice': itemPrice,
         'category': category,
-        'date': date
+        'date': date,
+        'isCommon': isCommon
       };
 }

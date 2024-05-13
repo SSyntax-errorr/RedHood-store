@@ -17,21 +17,24 @@ class DatabaseHelper {
 
   static Future<Database> initDatabase() async {
     final String path = join(await getDatabasesPath(), 'itemsdb.db');
-    return openDatabase(
-      path,
-      version: 1,
-      onCreate: (Database db, int version) async {
-        await db.execute('''
+    return openDatabase(path, version: 3,
+        onCreate: (Database db, int version) async {
+      await db.execute('''
           CREATE TABLE items(
             itemID INTEGER PRIMARY KEY,
             itemName TEXT,
             itemPrice REAL,
             category TEXT,
-            date TEXT
+            date TEXT,
+            isCommon int DEFAULT 0
           );
         ''');
-      },
-    );
+    }, onUpgrade: (Database db, int oldVersion, int newVersion) async {
+      if (oldVersion < 3) {
+        await db.execute('ALTER TABLE items ADD COLUMN isCommon INTEGER');
+        await db.execute('UPDATE items SET isCommon = 0');
+      }
+    });
   }
 
   static Future<void> insertItem(DataModel item) async {
@@ -55,6 +58,17 @@ class DatabaseHelper {
       item.toJson(),
       where: 'itemID = ?',
       whereArgs: [item.itemID],
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  static Future<void> makeItemCommon(int itemId, int isCommon) async {
+    final Database db = await database;
+    await db.update(
+      'items',
+      {'isCommon': isCommon == 1 ? 0 : 1}, // Update only the 'isCommon' column
+      where: 'itemID = ?',
+      whereArgs: [itemId],
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }

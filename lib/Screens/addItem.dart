@@ -37,6 +37,27 @@ class _AddItemWidgetState extends State<AddItemWidget> {
     Categories.Snacks,
     Categories.FrozenFood
   ];
+  void categoryInit(String category) {
+    switch (category) {
+      case "Cigarettes":
+        selectedValue = Categories.Cigarettes;
+      case "Liquor":
+        selectedValue = Categories.Liquor;
+      case "Snacks":
+        selectedValue = Categories.Snacks;
+      case "SoftDrinks":
+        selectedValue = Categories.SoftDrinks;
+      case "FrozenFood":
+        selectedValue = Categories.FrozenFood;
+
+      case "Other":
+        selectedValue = Categories.Other;
+      default:
+        selectedValue = Categories.Other;
+    }
+  }
+
+  bool isCommonToggle = false;
 
   @override
   void initState() {
@@ -46,6 +67,8 @@ class _AddItemWidgetState extends State<AddItemWidget> {
           itemList.firstWhere((item) => item.itemID == widget.editItemID);
       _itemNameController.text = itemID.itemName;
       _itemPriceController.text = itemID.itemPrice.toString();
+      categoryInit(itemID.category);
+      if (itemID.isCommon == 1) isCommonToggle = true;
     }
   }
 
@@ -60,12 +83,16 @@ class _AddItemWidgetState extends State<AddItemWidget> {
         centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(50.0),
+        padding: const EdgeInsets.all(30.0),
         child: Form(
           key: _formKey,
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              Text(
+                  ""), //temporary solution to padding problem. Pixels overflow if centered
               TextFormField(
+                //item name field
                 controller: _itemNameController,
                 onChanged: (value) {
                   itemNameInput = value;
@@ -86,6 +113,7 @@ class _AddItemWidgetState extends State<AddItemWidget> {
                 },
               ),
               TextFormField(
+                //price field
                 controller: _itemPriceController,
                 onChanged: (value) {
                   itemPriceInput = value;
@@ -140,6 +168,24 @@ class _AddItemWidgetState extends State<AddItemWidget> {
                   ),
                 ],
               ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Commonly bought item",
+                    style: TextStyle(color: redColor, fontSize: 18),
+                  ),
+                  Switch(
+                      activeColor: redColor,
+                      activeTrackColor: Colors.white,
+                      value: isCommonToggle,
+                      onChanged: (value) {
+                        setState(() {
+                          isCommonToggle = value;
+                        });
+                      }),
+                ],
+              ),
               Container(
                 margin: const EdgeInsets.only(top: 30),
                 child: ElevatedButton(
@@ -159,7 +205,8 @@ class _AddItemWidgetState extends State<AddItemWidget> {
                           itemName: itemNameInput,
                           itemPrice: double.parse(itemPriceInput),
                           category: selectedValue.name,
-                          date: formattedDate.toString());
+                          date: formattedDate.toString(),
+                          isCommon: isCommonToggle ? 1 : 0);
 
                       await DatabaseHelper.insertItem(newItem);
                     } else {
@@ -168,7 +215,8 @@ class _AddItemWidgetState extends State<AddItemWidget> {
                           itemName: _itemNameController.text,
                           itemPrice: double.parse(_itemPriceController.text),
                           category: selectedValue.name,
-                          date: formattedDate.toString());
+                          date: formattedDate.toString(),
+                          isCommon: isCommonToggle ? 1 : 0);
 
                       await DatabaseHelper.updateItem(updatedItem);
                     }
