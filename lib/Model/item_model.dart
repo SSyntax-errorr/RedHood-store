@@ -1,4 +1,5 @@
-enum Categories { Liquor, SoftDrinks, Cigarettes, FrozenFood, Snacks, Other }
+// ignore: constant_identifier_names
+enum Categories { Liquor, NonAlcoholic, Cigarettes, Food, Snacks, Other }
 
 class DataModel {
   final int itemID;

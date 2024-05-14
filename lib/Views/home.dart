@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:store/Model/itemModel.dart';
-import 'package:store/Screens/addItem.dart';
-import 'package:store/Screens/navBar.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:store/Model/item_model.dart';
+import 'package:store/Views/add_item_screen.dart';
+import 'package:store/Views/nav_bar_home.dart';
 import 'package:store/Services/database_helper.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -18,6 +19,7 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _HomePageState createState() => _HomePageState();
 }
 
@@ -63,7 +65,7 @@ class _HomePageState extends State<HomePage> {
         centerTitle: true,
       ),
       body: Stack(children: [
-        ///used stack() because column() causes pixel overflow
+        //?used stack() because column() causes pixel overflow
         Positioned(
           top: 10,
           left: 20,
@@ -79,7 +81,7 @@ class _HomePageState extends State<HomePage> {
                 focusedBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
                       color: Colors
-                          .red), // Color of the bottom line when the TextField is focused
+                          .red), //? Color of the bottom line when the TextField is focused
                 ),
                 hintText: "Search",
                 hintStyle: TextStyle(color: Color.fromARGB(58, 255, 255, 255)),
@@ -97,7 +99,7 @@ class _HomePageState extends State<HomePage> {
           left: 0,
           right: 0,
           bottom: 0,
-          child: ItemList(),
+          child: itemListBuilder(),
         ),
       ]),
       floatingActionButton: FloatingActionButton(
@@ -109,8 +111,11 @@ class _HomePageState extends State<HomePage> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => AddItemWidget()),
+              MaterialPageRoute(builder: (context) => const AddItemWidget()),
             ).then((_) {
+              if (!newItemAdded) return;
+
+              newItemAdded = false;
               setState(() {
                 itemListToDisplay = itemList;
                 drawerIndex = 0;
@@ -120,7 +125,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  FutureBuilder<List<DataModel>> ItemList() {
+  FutureBuilder<List<DataModel>> itemListBuilder() {
     return FutureBuilder<List<DataModel>>(
       future: DatabaseHelper.instance.retrieveItems(),
       builder: (context, snapshot) {
@@ -209,6 +214,10 @@ class _HomePageState extends State<HomePage> {
                         onPressed: (BuildContext context) {
                           editCommon(itemListToDisplay[index].itemID,
                               itemListToDisplay[index].isCommon);
+                          Fluttertoast.showToast(
+                              msg: itemListToDisplay[index].isCommon == 0
+                                  ? "${itemListToDisplay[index].itemName} Added to common items"
+                                  : "${itemListToDisplay[index].itemName} Removed from common items");
                           setState(() {});
                         })
                   ]),
@@ -216,9 +225,10 @@ class _HomePageState extends State<HomePage> {
                     color: const Color.fromARGB(255, 56, 52, 85),
                     child: ListTile(
                       leading: Icon(
-                        categoryIcon(itemListToDisplay.isEmpty
-                            ? itemListToDisplay[index].category
-                            : itemListToDisplay[index].category),
+                        categoryIcon(
+                            itemListToDisplay.isEmpty //?need to refactor
+                                ? itemListToDisplay[index].category
+                                : itemListToDisplay[index].category),
                         color: const Color.fromARGB(255, 243, 97, 100),
                       ),
                       trailing: Text(itemListToDisplay[index].date),
@@ -262,10 +272,11 @@ class _HomePageState extends State<HomePage> {
         return Icons.wine_bar;
       case "Snacks":
         return Icons.cookie;
-      case "SoftDrinks":
+
+      case "NonAlcoholic":
         return Icons.water_drop;
-      case "FrozenFood":
-        return Icons.icecream;
+      case "Food":
+        return Icons.ramen_dining;
 
       case "Other":
         return Icons.question_mark;

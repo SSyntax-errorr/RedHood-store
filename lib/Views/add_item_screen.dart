@@ -1,12 +1,13 @@
 //import 'dart:html';
-import 'dart:math';
+//import 'dart:math';
 
 //import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:store/Model/itemModel.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:store/Model/item_model.dart';
 import 'package:store/Services/database_helper.dart';
-import 'package:store/Screens/home.dart';
+import 'package:store/Views/home.dart';
 
 DateTime currentDate = DateTime.now();
 DateTime today = DateTime(currentDate.year, currentDate.month, currentDate.day);
@@ -15,15 +16,17 @@ String formattedDate =
 
 class AddItemWidget extends StatefulWidget {
   final int? editItemID;
-  AddItemWidget({super.key, this.editItemID});
+  const AddItemWidget({super.key, this.editItemID});
 
   @override
   State<AddItemWidget> createState() => _AddItemWidgetState();
 }
 
+bool newItemAdded = false;
+
 class _AddItemWidgetState extends State<AddItemWidget> {
-  TextEditingController _itemNameController = TextEditingController();
-  TextEditingController _itemPriceController = TextEditingController();
+  final TextEditingController _itemNameController = TextEditingController();
+  final TextEditingController _itemPriceController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
   String itemNameInput = '';
@@ -33,9 +36,9 @@ class _AddItemWidgetState extends State<AddItemWidget> {
     Categories.Other,
     Categories.Liquor,
     Categories.Cigarettes,
-    Categories.SoftDrinks,
+    Categories.NonAlcoholic,
     Categories.Snacks,
-    Categories.FrozenFood
+    Categories.Food
   ];
   void categoryInit(String category) {
     switch (category) {
@@ -45,10 +48,11 @@ class _AddItemWidgetState extends State<AddItemWidget> {
         selectedValue = Categories.Liquor;
       case "Snacks":
         selectedValue = Categories.Snacks;
-      case "SoftDrinks":
-        selectedValue = Categories.SoftDrinks;
-      case "FrozenFood":
-        selectedValue = Categories.FrozenFood;
+
+      case "NonAlcoholic":
+        selectedValue = Categories.NonAlcoholic;
+      case "Food":
+        selectedValue = Categories.Food;
 
       case "Other":
         selectedValue = Categories.Other;
@@ -61,7 +65,8 @@ class _AddItemWidgetState extends State<AddItemWidget> {
 
   @override
   void initState() {
-    //_itemNameController.text = editItemID;
+    super.initState();
+
     if (widget.editItemID != null) {
       DataModel itemID =
           itemList.firstWhere((item) => item.itemID == widget.editItemID);
@@ -89,8 +94,8 @@ class _AddItemWidgetState extends State<AddItemWidget> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text(
-                  ""), //temporary solution to padding problem. Pixels overflow if centered
+              const Text(
+                  ""), //?temporary solution to padding problem. Pixels overflow if centered
               TextFormField(
                 //item name field
                 controller: _itemNameController,
@@ -132,6 +137,8 @@ class _AddItemWidgetState extends State<AddItemWidget> {
                     hintText: "Enter the item price"),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
+                    Fluttertoast.showToast(
+                        msg: "Please fill the appropriate fields");
                     return "Invalid input";
                   }
                   return null;
@@ -192,16 +199,21 @@ class _AddItemWidgetState extends State<AddItemWidget> {
                   onPressed: () async {
                     if (_itemNameController.text.isEmpty ||
                         _itemPriceController.text.isEmpty) {
+                      Fluttertoast.showToast(
+                          msg: "Please fill in the name and price fields");
                       return;
                     }
 
                     if (widget.editItemID == null) {
-                      int randomId;
+                      int generatedNewItemID =
+                          itemList.isEmpty ? 1 : itemList.last.itemID;
 
-                      randomId = Random().nextInt(10000);
+                      do {
+                        generatedNewItemID += 1;
+                      } while (idList.contains(generatedNewItemID));
 
                       final DataModel newItem = DataModel(
-                          itemID: randomId,
+                          itemID: generatedNewItemID,
                           itemName: itemNameInput,
                           itemPrice: double.parse(itemPriceInput),
                           category: selectedValue.name,
@@ -230,12 +242,15 @@ class _AddItemWidgetState extends State<AddItemWidget> {
                         ),
                       );
                     }
+                    newItemAdded = true;
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
                       backgroundColor: const Color.fromARGB(255, 239, 68, 74),
                       foregroundColor: Colors.white),
-                  child: widget.editItemID == null ? Text("Add") : Text("Edit"),
+                  child: widget.editItemID == null
+                      ? const Text("Add")
+                      : const Text("Edit"),
                 ),
               )
             ],

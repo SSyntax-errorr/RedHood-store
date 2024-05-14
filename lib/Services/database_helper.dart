@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:sqflite/sqflite.dart';
-import 'package:store/Model/itemModel.dart';
+import 'package:store/Model/item_model.dart';
 import 'package:path/path.dart';
 
 class DatabaseHelper {

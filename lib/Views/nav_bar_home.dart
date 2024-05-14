@@ -1,6 +1,6 @@
 // ignore: file_names
 import 'package:flutter/material.dart';
-import 'package:store/Screens/home.dart';
+import 'package:store/Views/home.dart';
 
 class NavBar extends StatefulWidget {
   //NavBar({super.key});
@@ -17,8 +17,8 @@ class NavBar extends StatefulWidget {
 }
 
 int drawerIndex =
-    0; //TEMPORARY SOLUTION TO REMEMBERING DRAWER INDEX AFTER CLOSE.
-//CHANGE TO LOCAL WHENEVER POSSIBLE
+    0; //*TEMPORARY SOLUTION TO REMEMBERING DRAWER INDEX AFTER CLOSE.
+//TODO: CHANGE TO LOCAL WHENEVER POSSIBLE
 
 class _NavBarState extends State<NavBar> {
   //GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -26,7 +26,6 @@ class _NavBarState extends State<NavBar> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     _selectedIndex = drawerIndex;
@@ -155,12 +154,14 @@ class _NavBarState extends State<NavBar> {
             selectedColor: redColor,
             selectedTileColor: const Color.fromARGB(255, 39, 36, 60),
             title: const Text(
-              'Soft Drinks',
+              'Non Alcoholic Drinks',
               style: TextStyle(color: Colors.white),
             ),
             trailing: Text(
               itemList
-                  .where((item) => item.category == 'SoftDrinks')
+                  .where((item) =>
+                      item.category == 'SoftDrinks' ||
+                      item.category == 'NonAlcoholic')
                   .length
                   .toString(),
               style: const TextStyle(color: Colors.white),
@@ -170,7 +171,7 @@ class _NavBarState extends State<NavBar> {
                 drawerIndex = 4;
                 _selectedIndex = 4;
               });
-              categoryFilter('SoftDrinks', context);
+              categoryFilter('NonAlcoholic', context);
               widget.scaffoldKey.currentState?.closeDrawer();
 
               widget.onItemClicked();
@@ -204,17 +205,17 @@ class _NavBarState extends State<NavBar> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.icecream),
+            leading: const Icon(Icons.ramen_dining),
             selected: _selectedIndex == 6,
             selectedColor: redColor,
             selectedTileColor: const Color.fromARGB(255, 39, 36, 60),
             title: const Text(
-              'Frozen food',
+              'Food',
               style: TextStyle(color: Colors.white),
             ),
             trailing: Text(
               itemList
-                  .where((item) => item.category == 'FrozenFood')
+                  .where((item) => item.category == 'Food')
                   .length
                   .toString(),
               style: const TextStyle(color: Colors.white),
@@ -224,7 +225,7 @@ class _NavBarState extends State<NavBar> {
                 drawerIndex = 6;
                 _selectedIndex = 6;
               });
-              categoryFilter('FrozenFood', context);
+              categoryFilter('Food', context);
               widget.scaffoldKey.currentState?.closeDrawer();
 
               widget.onItemClicked();
@@ -281,7 +282,6 @@ void commonItemsFilter() {
     if (item.isCommon == 1) {
       subItemList.add(item);
       itemListToDisplay.add(item);
-      print(item.itemName);
     }
   }
 }
